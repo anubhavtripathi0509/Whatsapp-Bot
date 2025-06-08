@@ -1,0 +1,173 @@
+{
+  "name": "ava",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook/whatsapp",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "name": "Webhook WhatsApp",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        -100
+      ],
+      "webhookId": "example-webhook-id",
+      "id": "fab2accc-3c13-4a68-b5ab-d3db508b9972"
+    },
+    {
+      "parameters": {
+        "functionCode": "const body = $json;\n// Extract the message body and sender information from the incoming payload\nconst messageText = body.body || '';\nconst sender = body.from || '';\n\n// Return the message text under 'chatInput' and sender info under 'from'\nreturn [{ chatInput: messageText, from: sender }];"
+      },
+      "name": "Extract Message",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -180,
+        -100
+      ],
+      "id": "663d6086-1e8d-4b01-9200-ce059ce74387"
+    },
+    {
+      "parameters": {
+        "functionCode": "const aiReply = $json.text || 'No reply generated';\n\nreturn [{ reply: aiReply }];"
+      },
+      "name": "Return AI Reply",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        520,
+        -100
+      ],
+      "id": "0b5f593a-6b14-4b12-8e1e-90fc7a5fff99"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a helpful AI companion"
+            }
+          ]
+        }
+      },
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        80,
+        -100
+      ],
+      "id": "17db2de9-0bc4-47b8-be35-bdeeafb952a4"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={\n  \"reply\": \"={{ $json.reply }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        740,
+        -100
+      ],
+      "id": "d96cbbf0-ed87-41f3-8592-ca50a4c30035",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "model": "gemma3:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        180,
+        120
+      ],
+      "id": "98dab646-9faa-4fdd-acd5-7e18928ef7d8",
+      "name": "Ollama Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "kav4Hk8dmyK5oEdg",
+          "name": "Ollama account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Extract Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Message": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Return AI Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return AI Reply": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "044eba34-5919-4a1b-a21d-9e4ebc99fe37",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "BEhpgxZ764MSv8hA",
+  "tags": []
+}
