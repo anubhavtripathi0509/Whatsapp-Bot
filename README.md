@@ -1,4 +1,4 @@
-# Build Your First AI Agent — Step-by-Step Guide
+# Whatsapp AI Agent — Step-by-Step Guide
 
 ### 1️⃣ Install Docker
 
